@@ -192,19 +192,26 @@ body{font-family:'Montserrat',sans-serif;background:var(--tt-bg);color:#fff;min-
 
     // --- OYUN AKIŞI ---
     window.startLobby = () => {
-      gamePin = String(Math.floor(100000 + Math.random() * 900000));
-      const state = { pin: gamePin, phase: 'lobby', players: {}, currentQ: 0 };
-      
-      set(ref(db, 'games/' + gamePin), state).then(() => {
-        window.show('host');
-        document.getElementById('game-pin').textContent = gamePin;
-        
-        // QR Kod
-        document.getElementById('qr-container').innerHTML = '';
-        new QRCode(document.getElementById('qr-container'), {
-          text: window.location.origin + window.location.pathname + "?pin=" + gamePin,
-          width: 160, height: 160
-        });
+  gamePin = String(Math.floor(100000 + Math.random() * 900000));
+  const state = { pin: gamePin, phase: 'lobby', players: {}, currentQ: 0 };
+  
+  // Bulunduğun sayfanın linkini al (GitHub adresi dahil)
+  const currentUrl = window.location.href.split('?')[0]; 
+  const joinUrl = currentUrl + "?pin=" + gamePin;
+
+  set(ref(db, 'games/' + gamePin), state).then(() => {
+    window.show('host');
+    document.getElementById('game-pin').textContent = gamePin;
+    
+    document.getElementById('qr-container').innerHTML = '';
+    new QRCode(document.getElementById('qr-container'), {
+      text: joinUrl, // Düzeltilmiş link
+      width: 160, height: 160
+    });
+    
+    // ... oyuncu dinleme kodu aynı kalsın
+  });
+};
 
         // Oyuncuları Dinle
         onValue(ref(db, `games/${gamePin}/players`), (snap) => {
