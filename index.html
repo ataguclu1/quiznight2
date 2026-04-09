@@ -6,7 +6,7 @@
 <title>AssisTT Quiz Time</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-/* TASARIMIN VE CSS KODLARININ TAMAMI BURADA (HİÇ DOKUNULMADI) */
+/* SENİN ORİJİNAL CSS KODLARIN */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&display=swap');
 :root { --tt-blue: #002C5F; --tt-cyan: #00B5E2; --tt-bg: #001736; --panel-bg: rgba(255, 255, 255, 0.08); --border-light: rgba(255, 255, 255, 0.15); --success: #2ecc71; --danger: #e74c3c; }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -14,16 +14,15 @@ body{font-family:'Montserrat',sans-serif;background:var(--tt-bg);color:#fff;min-
 .screen{display:none;min-height:100vh}.screen.active{display:flex;flex-direction:column}
 #screen-landing, #screen-admin-login, #screen-host, #screen-join, #screen-waiting, #screen-lb, #screen-end { align-items:center; justify-content:center; text-align:center; padding:2rem; }
 .logo{font-size:3rem;font-weight:900}.logo span{color:var(--tt-cyan)}
-.btn{padding:1rem 2.5rem;border-radius:12px;border:none;cursor:pointer;font-weight:700;transition:all .2s;font-family:inherit;}
+.btn{padding:1rem 2.5rem;border-radius:12px;border:none;cursor:pointer;font-weight:700;transition:all .2s;font-family:inherit; margin:5px;}
 .btn-primary{background:var(--tt-cyan);color:#fff}.btn-outline{background:transparent;color:#fff;border:2px solid var(--border-light)}
 .card-panel {background:var(--panel-bg);border-radius:24px;padding:2.5rem;width:100%;max-width:400px;display:flex;flex-direction:column;gap:1.2rem;}
-.fi {width:100%;padding:1rem;background:rgba(255,255,255,.1);border:1px solid var(--border-light);border-radius:12px;color:#fff;text-align:center;outline:none;}
-/* Admin Panel Tasarımı */
+.fi {width:100%;padding:1rem;background:rgba(255,255,255,.1);border:1px solid var(--border-light);border-radius:12px;color:#fff;text-align:center;outline:none;margin-bottom:10px;}
 #screen-admin{background:var(--tt-bg)}
 .ahdr{background:var(--tt-blue);padding:1rem 2rem;display:flex;align-items:center;gap:1rem;border-bottom:1px solid var(--border-light)}
 .abody{display:flex;flex:1;gap:0}.sidebar{width:280px;background:var(--tt-blue);padding:1.5rem;border-right:1px solid var(--border-light)}
-.qlist{list-style:none;margin-top:1rem}.qi{padding:.8rem;background:rgba(255,255,255,.05);border-radius:10px;margin-bottom:.5rem;cursor:pointer;display:flex;justify-content:space-between}
-.qi.active{border:1px solid var(--tt-cyan);background:rgba(0,181,226,.1)}
+.qlist{list-style:none;margin-top:1rem}.qi{padding:.8rem;background:rgba(255,255,255,.05);border-radius:10px;margin-bottom:.5rem;cursor:pointer;display:flex;justify-content:space-between;border:1px solid transparent;}
+.qi.active{border-color:var(--tt-cyan);background:rgba(0,181,226,.1)}
 .editor{flex:1;padding:2.5rem;overflow-y:auto}
 .gpin{font-size:4rem;font-weight:900;color:var(--tt-cyan);margin:1rem 0}
 .pchips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:1rem}
@@ -62,14 +61,15 @@ body{font-family:'Montserrat',sans-serif;background:var(--tt-bg);color:#fff;min-
         <button class="btn btn-outline" style="width:100%" onclick="window.addQ()">+ Yeni Soru</button>
       </div>
       <div id="editor" class="editor">
-        </div>
+        <p>Düzenlemek için soldan bir soru seçin.</p>
+      </div>
     </div>
   </div>
 
   <div id="screen-host" class="screen">
-    <h1>KATILIM KODU</h1>
+    <h1>KATILIM PIN KODU</h1>
     <div class="gpin" id="game-pin">000000</div>
-    <div id="qr-container" style="background:#fff; padding:10px; border-radius:10px;"></div>
+    <div id="qr-container" style="background:#fff; padding:10px; border-radius:10px; display:inline-block;"></div>
     <div class="pchips" id="player-chips"></div>
     <p style="margin-top:1rem"><span id="player-count">0</span> Oyuncu Bağlandı</p>
     <button class="btn btn-primary" onclick="window.startGame()" style="margin-top:2rem">OYUNU BAŞLAT</button>
@@ -94,124 +94,158 @@ body{font-family:'Montserrat',sans-serif;background:var(--tt-bg);color:#fff;min-
   </div>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-  // 1. FIREBASE YAPILANDIRMAN (Aynen Kalıyor)
-  const firebaseConfig = {
-    apiKey: "AIzaSyA7ZWCeXXr9Ale5nadD1ZAoI46i18tFu6k",
-    authDomain: "assistt-quiz-time.firebaseapp.com",
-    databaseURL: "https://assistt-quiz-time-default-rtdb.firebaseio.com",
-    projectId: "assistt-quiz-time",
-    storageBucket: "assistt-quiz-time.firebasestorage.app",
-    messagingSenderId: "343741235205",
-    appId: "1:343741235205:web:d68c1d30180ee878739c6c",
-    measurementId: "G-KN6Y837NZH"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyA7ZWCeXXr9Ale5nadD1ZAoI46i18tFu6k",
+      authDomain: "assistt-quiz-time.firebaseapp.com",
+      databaseURL: "https://assistt-quiz-time-default-rtdb.firebaseio.com",
+      projectId: "assistt-quiz-time",
+      storageBucket: "assistt-quiz-time.firebasestorage.app",
+      messagingSenderId: "343741235205",
+      appId: "1:343741235205:web:d68c1d30180ee878739c6c",
+      measurementId: "G-KN6Y837NZH"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  let questions = [];
-  let selQIdx = -1;
-  let gamePin = '';
-  let myName = '';
+    let questions = [];
+    let selQIdx = -1;
+    let gamePin = '';
 
-  // EKRAN DEĞİŞTİRME FONKSİYONU
-  window.show = (id) => {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    const target = document.getElementById('screen-' + id);
-    if(target) target.classList.add('active');
-  };
+    // --- GLOBAL FONKSİYONLAR ---
+    window.show = (id) => {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const el = document.getElementById('screen-' + id);
+      if(el) el.classList.add('active');
+    };
 
-  // ADMIN GİRİŞİ
-  window.adminLogin = () => {
-    if(document.getElementById('admin-pw').value === "admin123") {
-      window.show('admin');
-      loadQuestions();
-    } else { alert("Hatalı Şifre!"); }
-  };
+    window.adminLogin = () => {
+      const pw = document.getElementById('admin-pw').value;
+      if(pw === "admin123") {
+        window.show('admin');
+        loadQuestions();
+      } else { alert("Hatalı Şifre!"); }
+    };
 
-  function loadQuestions() {
-    onValue(ref(db, 'admin/questions'), (snapshot) => {
-      questions = snapshot.val() || [];
+    function loadQuestions() {
+      onValue(ref(db, 'admin/questions'), (snapshot) => {
+        questions = snapshot.val() || [];
+        renderQL();
+      });
+    }
+
+    function renderQL() {
+      const ul = document.getElementById('q-list');
+      ul.innerHTML = questions.map((q, i) => `
+        <li class="qi ${i === selQIdx ? 'active' : ''}" onclick="window.selQ(${i})">
+          <span>${i + 1}. ${q.text || 'Yeni Soru'}</span>
+          <span onclick="window.delQ(event, ${i})">✕</span>
+        </li>`).join('');
+    }
+
+    window.selQ = (i) => {
+      selQIdx = i;
       renderQL();
-    });
-  }
+      const q = questions[i];
+      document.getElementById('editor').innerHTML = `
+        <div style="margin-bottom:1.5rem">
+          <label style="display:block;margin-bottom:5px">Soru Metni</label>
+          <textarea class="fi" style="text-align:left;height:80px" id="e-text">${q.text || ''}</textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px">
+          ${[0, 1, 2, 3].map(j => `
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; border: 2px solid ${q.answers?.[j]?.correct ? '#2ecc71' : 'transparent'}">
+              <input type="text" class="fi" id="e-ans-${j}" value="${q.answers?.[j]?.text || ''}" placeholder="Seçenek ${j + 1}">
+              <button class="btn ${q.answers?.[j]?.correct ? 'btn-primary' : 'btn-outline'}" style="width:100%;font-size:0.8rem" onclick="window.setCorrect(${j})">
+                ${q.answers?.[j]?.correct ? '✅ DOĞRU ŞIK' : 'YANLIŞ ŞIK'}
+              </button>
+            </div>
+          `).join('')}
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:2rem" onclick="window.saveQ(${i})">💾 SORUYU KAYDET</button>
+      `;
+    };
 
-  // LOBİ BAŞLATMA VE QR KOD (ADIM 2 & 3 GÜNCEL)
-  window.startLobby = () => {
-    gamePin = String(Math.floor(100000 + Math.random() * 900000));
-    const state = { pin: gamePin, phase: 'lobby', players: {}, currentQ: 0 };
-    
-    // Linki dinamik oluştur: GitHub Pages linkini otomatik algılar
-    const currentUrl = window.location.origin + window.location.pathname;
-    const joinUrl = currentUrl + "?pin=" + gamePin;
+    window.setCorrect = (j) => {
+      if(!questions[selQIdx].answers) questions[selQIdx].answers = [{},{},{},{}];
+      questions[selQIdx].answers.forEach((a, idx) => a.correct = (idx === j));
+      window.selQ(selQIdx);
+    };
 
-    set(ref(db, 'games/' + gamePin), state).then(() => {
-      window.show('host');
-      document.getElementById('game-pin').textContent = gamePin;
-      
-      // QR kodu yeni link ile oluştur
-      document.getElementById('qr-container').innerHTML = '';
-      new QRCode(document.getElementById('qr-container'), {
-        text: joinUrl,
-        width: 160, height: 160
-      });
+    window.saveQ = (i) => {
+      const text = document.getElementById('e-text').value;
+      const answers = [0, 1, 2, 3].map(j => ({
+        text: document.getElementById('e-ans-' + j).value,
+        correct: questions[i].answers?.[j]?.correct || false
+      }));
+      questions[i] = { text, answers, time: 20 };
+      set(ref(db, 'admin/questions'), questions).then(() => alert("Kaydedildi!"));
+    };
 
-      // Oyuncuları anlık dinle
-      onValue(ref(db, `games/${gamePin}/players`), (snap) => {
-        const p = snap.val() || {};
-        const names = Object.keys(p);
-        document.getElementById('player-count').textContent = names.length;
-        document.getElementById('player-chips').innerHTML = names.map(n => `<div class="pchip">${n}</div>`).join('');
-      });
-    });
-  };
+    window.addQ = () => {
+      questions.push({ text: '', answers: [{text:'',correct:false},{text:'',correct:false},{text:'',correct:false},{text:'',correct:false}] });
+      set(ref(db, 'admin/questions'), questions);
+    };
 
-  // OYUNA KATILMA VE HATA AYIKLAMA (ADIM 4 GÜNCEL)
-  window.joinGame = async () => {
-    const pin = document.getElementById('join-pin').value;
-    const name = document.getElementById('join-name').value;
-    
-    if(!pin || !name) return alert("Lütfen PIN ve İsim girin!");
-
-    try {
-      // Firebase'den bu PIN ile bir oda var mı sorgula
-      const snap = await get(ref(db, 'games/' + pin));
-      
-      if(snap.exists()) {
-        // Oda varsa oyuncuyu kaydet
-        await update(ref(db, `games/${pin}/players/${name}`), { score: 0, connected: true });
-        myName = name;
-        document.getElementById('w-name').textContent = name;
-        document.getElementById('w-pin').textContent = pin;
-        window.show('waiting');
-      } else {
-        // Oda yoksa hatayı göster
-        alert("Oturum bulunamadı! Lütfen PIN kodunu kontrol edin. Girilen: " + pin);
+    window.delQ = (e, i) => {
+      e.stopPropagation();
+      if(confirm('Soruyu silmek istediğine emin misin?')) {
+        questions.splice(i, 1);
+        set(ref(db, 'admin/questions'), questions);
       }
-    } catch (error) {
-      console.error("Bağlantı Hatası:", error);
-      alert("Firebase'e bağlanılamadı: " + error.message);
-    }
-  };
+    };
 
-  // SAYFA YÜKLENDİĞİNDE URL'DEN PIN ÇEKME (ADIM 3 GÜNCEL)
-  window.addEventListener('load', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const pinFromUrl = urlParams.get('pin');
-    
-    if (pinFromUrl) {
-      window.show('join'); // Doğrudan katılım ekranını aç
-      setTimeout(() => {
-        const pinInput = document.getElementById('join-pin');
-        if(pinInput) pinInput.value = pinFromUrl;
-      }, 300);
-    }
-  });
+    // --- OYUN MANTIĞI ---
+    window.startLobby = () => {
+      gamePin = String(Math.floor(100000 + Math.random() * 900000));
+      const state = { pin: gamePin, phase: 'lobby', players: {}, currentQ: 0 };
+      
+      const joinUrl = window.location.origin + window.location.pathname + "?pin=" + gamePin;
 
-  // DİĞER EDİTÖR FONKSİYONLARI ( window.saveQ, window.addQ, window.selQ vb. ) buraya gelecek...
-</script>
+      set(ref(db, 'games/' + gamePin), state).then(() => {
+        window.show('host');
+        document.getElementById('game-pin').textContent = gamePin;
+        document.getElementById('qr-container').innerHTML = '';
+        new QRCode(document.getElementById('qr-container'), { text: joinUrl, width: 160, height: 160 });
+
+        onValue(ref(db, `games/${gamePin}/players`), (snap) => {
+          const p = snap.val() || {};
+          const names = Object.keys(p);
+          document.getElementById('player-count').textContent = names.length;
+          document.getElementById('player-chips').innerHTML = names.map(n => `<div class="pchip">${n}</div>`).join('');
+        });
+      });
+    };
+
+    window.joinGame = async () => {
+      const pin = document.getElementById('join-pin').value;
+      const name = document.getElementById('join-name').value;
+      if(!pin || !name) return alert("Eksik bilgi!");
+
+      try {
+        const snap = await get(ref(db, 'games/' + pin));
+        if(snap.exists()) {
+          await update(ref(db, `games/${pin}/players/${name}`), { score: 0, connected: true });
+          document.getElementById('w-name').textContent = name;
+          document.getElementById('w-pin').textContent = pin;
+          window.show('waiting');
+        } else { alert("Aktif bir oturum bulunamadı!"); }
+      } catch (e) { alert("Hata: " + e.message); }
+    };
+
+    // --- OTOMATİK PIN ÇEKME ---
+    window.addEventListener('load', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pinFromUrl = urlParams.get('pin');
+      if (pinFromUrl) {
+        window.show('join');
+        setTimeout(() => { document.getElementById('join-pin').value = pinFromUrl; }, 500);
+      }
+    });
+
+  </script>
 </body>
 </html>
